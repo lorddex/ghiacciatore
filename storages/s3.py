@@ -1,9 +1,13 @@
+import logging
 import os
-from typing import Any
+from typing import Any, Optional
 
 import boto3
 
 from storages.storage import Storage
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class StorageAWSS3(Storage):
@@ -18,8 +22,10 @@ class StorageAWSS3(Storage):
         self._s3_resource = boto3.resource("s3")
         self._s3_bucket = self._s3_resource.Bucket(self.name)
         self.exists = self._s3_bucket.creation_date is not None
+        logger.info(f"Init S3 Storage {name} (exists={self.exists})")
 
     def create(self) -> None:
+        logger.info(f"Creating a new S3 Bucket {self.name}")
         # Create the S3 Bucket
         self._s3_bucket = self._s3_bucket.create(
             ACL="private",
@@ -28,6 +34,7 @@ class StorageAWSS3(Storage):
             },
         )
         # Set up Encryption
+        logger.debug("Setup encryption")
         self._client.put_bucket_encryption(
             Bucket=self.name,
             ServerSideEncryptionConfiguration={
@@ -37,6 +44,7 @@ class StorageAWSS3(Storage):
             },
         )
         # Block any public access
+        logger.debug("Block public access")
         self._client.put_public_access_block(
             Bucket=self.name,
             PublicAccessBlockConfiguration={
@@ -47,7 +55,10 @@ class StorageAWSS3(Storage):
             },
         )
 
-    def add_file(self, file_name: str) -> dict:
-        return boto3.resource("s3").Object(self.name, f"{file_name}").put(
-            Body=open(file_name, "rb")
+    def add_file(self, file_name: str, import_name: Optional[str] = None) -> dict:
+        logger.info(f"Uploading {file_name}")
+        return (
+            boto3.resource("s3")
+            .Object(self.name, f"{file_name if not import_name else import_name}")
+            .put(Body=open(file_name, "rb"))
         )

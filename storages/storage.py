@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Type, TypeVar
+from typing import Type, TypeVar, Optional
 
 import boto3
 
@@ -34,5 +34,5 @@ class Storage(ABC):
         pass
 
     @abstractmethod
-    def add_file(self, file_name: str) -> dict:
+    def add_file(self, file_name: str, import_name: Optional[str] = None) -> dict:
         pass

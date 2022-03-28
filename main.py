@@ -1,12 +1,12 @@
+import argparse
 import logging
 import sys
+from typing import Optional
 
 from archiver.archiver import Archiver
 from storages.enums import StorageType
-import argparse
 
 logging.basicConfig(
-    level=logging.WARNING,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[logging.StreamHandler(sys.stdout)],
 )
@@ -14,8 +14,18 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def main(storage_type: StorageType, storage_name: str, path: str) -> None:
-    ghiacciatore: Archiver = Archiver(StorageType.value_of(storage_type.lower()))
+def main(
+    storage_type: StorageType,
+    storage_name: str,
+    path: str,
+    create_missing_storage: Optional[bool] = False,
+    reduce_path_when_importing: Optional[str] = None,
+) -> None:
+    ghiacciatore: Archiver = Archiver(
+        StorageType.value_of(storage_type.lower()),
+        create_missing_storage=create_missing_storage,
+        reduce_path_when_importing=reduce_path_when_importing,
+    )
     ghiacciatore.store_folder(storage_name, path, recursive=True)
 
 
@@ -31,7 +41,20 @@ if __name__ == "__main__":
         default="ghiacciatore",
         help="The name of the storage that will be used as name of the created resource (Vault or Bucket)",
     )
+    parser.add_argument(
+        "--create-missing-storage",
+        action="store_true",
+        default=False,
+        help="If the storage (Vault or Bucket) must be created if missing",
+    )
+    parser.add_argument(
+        "--reduce-path-when-importing",
+        help="Prefix of the `path` parameter that must not be used when importing the file in the"
+        " storage.\nE.g. if path is /home/test/folder, and this parameter is /home/test, in "
+        "the destination `/home/test` won't be used",
+    )
     parser.add_argument("path", help="The file or folder to backup")
     args = parser.parse_args()
-    logger.debug("Starting Ghiacciatore")
-    main(args.storage_type, args.storage_name, args.path)
+    logger.info("Starting Ghiacciatore")
+    main(args.storage_type, args.storage_name, args.path, args.create_missing_storage, args.reduce_path_when_importing)
+    logger.info("End Ghiacciatore")
