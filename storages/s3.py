@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 import boto3
 
@@ -6,14 +7,19 @@ from storages.storage import Storage
 
 
 class StorageAWSS3(Storage):
-    def __init__(self, name, storage=None):
-        super().__init__(name, storage)
+    _client: Any = None
+    _s3_resource: Any = None
+    _s3_bucket: Any = None
+    exists: bool = False
+
+    def __init__(self, name: str) -> None:
+        super().__init__(name)
         self._client = boto3.client("s3")
         self._s3_resource = boto3.resource("s3")
         self._s3_bucket = self._s3_resource.Bucket(self.name)
         self.exists = self._s3_bucket.creation_date is not None
 
-    def create(self):
+    def create(self) -> None:
         # Create the S3 Bucket
         self._s3_bucket = self._s3_bucket.create(
             ACL="private",
@@ -41,7 +47,7 @@ class StorageAWSS3(Storage):
             },
         )
 
-    def add_file(self, file_name):
-        boto3.resource("s3").Object(self.name, f"{file_name}").put(
+    def add_file(self, file_name: str) -> dict:
+        return boto3.resource("s3").Object(self.name, f"{file_name}").put(
             Body=open(file_name, "rb")
         )

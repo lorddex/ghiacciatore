@@ -1,13 +1,21 @@
 from abc import ABC, abstractmethod
+from typing import Type, TypeVar
 
 import boto3
 
 from storages.enums import StorageType
 
+Self = TypeVar("Self", bound="Storage")
+
 
 class Storage(ABC):
+
+    name: str = None
+    _account_id: str = None
+    exists: bool = False
+
     @staticmethod
-    def get_storage_class(storage_type):
+    def get_storage_class(storage_type: StorageType) -> Type[Self]:
         if storage_type == StorageType.AWS_GLACIER:
             from storages.glacier import StorageAWSGlacier
 
@@ -17,15 +25,14 @@ class Storage(ABC):
 
             return StorageAWSS3
 
-    def __init__(self, name, storage=None):
+    def __init__(self, name: str) -> None:
         self._account_id = boto3.client("sts").get_caller_identity().get("Account")
         self.name = name
-        self.storage = storage
 
     @abstractmethod
-    def create(self):
+    def create(self) -> Self:
         pass
 
     @abstractmethod
-    def add_file(self, file_name):
+    def add_file(self, file_name: str) -> dict:
         pass
