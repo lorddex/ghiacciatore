@@ -30,7 +30,9 @@ def main(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Starts a Synchronisation")
+    parser = argparse.ArgumentParser(
+        description="Synchronises a local folder to a remote AWS S3 or Glacier Storage."
+    )
     parser.add_argument(
         "--storage-type",
         default=StorageType.AWS_S3.value,
@@ -39,7 +41,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--storage-name",
         default="ghiacciatore",
-        help="The name of the storage that will be used as name of the created resource (Vault or Bucket)",
+        help="The name of the storage that will be used as name of the created resource "
+        "(Vault or Bucket)",
     )
     parser.add_argument(
         "--create-missing-storage",
@@ -56,5 +59,11 @@ if __name__ == "__main__":
     parser.add_argument("path", help="The file or folder to backup")
     args = parser.parse_args()
     logger.info("Starting Ghiacciatore")
-    main(args.storage_type, args.storage_name, args.path, args.create_missing_storage, args.reduce_path_when_importing)
+    main(
+        args.storage_type,
+        args.storage_name,
+        args.path,
+        args.create_missing_storage,
+        args.reduce_path_when_importing,
+    )
     logger.info("End Ghiacciatore")
