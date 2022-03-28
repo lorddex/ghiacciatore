@@ -3,6 +3,7 @@ import sys
 
 from archiver.archiver import Archiver
 from storages.enums import StorageType
+import argparse
 
 logging.basicConfig(
     level=logging.WARNING,
@@ -13,17 +14,24 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def main():
-    ghiacciatore = Archiver(StorageType.AWS_S3)
-    # storages = ghiacciatore.list_storages()
-    # logger.debug(f"Found {len(storages)} vaults.")
-    # ghiacciatore.get_storage("ghiacciatore", create_if_missing=True)
-    # upload = ghiacciatore.store_file("ghiacciatore", "test_upload.txt")
-    # logger.debug(upload)
-
-    ghiacciatore.store_folder("ghiacciatore", "test", recursive=True)
+def main(storage_type: StorageType, storage_name: str, path: str) -> None:
+    ghiacciatore: Archiver = Archiver(StorageType.value_of(storage_type.lower()))
+    ghiacciatore.store_folder(storage_name, path, recursive=True)
 
 
 if __name__ == "__main__":
-    logger.debug("Starting main")
-    main()
+    parser = argparse.ArgumentParser(description="Starts a Synchronisation")
+    parser.add_argument(
+        "--storage-type",
+        default=StorageType.AWS_S3.value,
+        help="The type of storage to use (s3 -default-, glacier)",
+    )
+    parser.add_argument(
+        "--storage-name",
+        default="ghiacciatore",
+        help="The name of the storage that will be used as name of the created resource (Vault or Bucket)",
+    )
+    parser.add_argument("path", help="The file or folder to backup")
+    args = parser.parse_args()
+    logger.debug("Starting Ghiacciatore")
+    main(args.storage_type, args.storage_name, args.path)
