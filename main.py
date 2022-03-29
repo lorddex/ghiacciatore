@@ -7,8 +7,8 @@ import logging
 import sys
 from typing import Optional
 
-from archiver.archiver import Archiver
-from storages.enums import StorageType
+from ghiacciatore.archiver.archiver import Archiver
+from ghiacciatore.storages.enums import StorageType
 
 logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",

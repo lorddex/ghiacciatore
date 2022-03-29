@@ -6,8 +6,8 @@ import logging
 import os
 from typing import List, Optional, Type
 
-from storages.enums import StorageType
-from storages.storage import Storage
+from ghiacciatore.storages.enums import StorageType
+from ghiacciatore.storages.storage import Storage
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

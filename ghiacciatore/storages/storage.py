@@ -7,7 +7,7 @@ from typing import Type, TypeVar, Optional
 
 import boto3
 
-from storages.enums import StorageType
+from ghiacciatore.storages.enums import StorageType
 
 Self = TypeVar("Self", bound="Storage")
 
@@ -21,11 +21,11 @@ class Storage(ABC):
     @staticmethod
     def get_storage_class(storage_type: StorageType) -> Type[Self]:
         if storage_type == StorageType.AWS_GLACIER:
-            from storages.glacier import StorageAWSGlacier
+            from ghiacciatore.storages.glacier import StorageAWSGlacier
 
             return StorageAWSGlacier
         elif storage_type == StorageType.AWS_S3:
-            from storages.s3 import StorageAWSS3
+            from ghiacciatore.storages.s3 import StorageAWSS3
 
             return StorageAWSS3
 

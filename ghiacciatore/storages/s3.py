@@ -8,7 +8,7 @@ from typing import Any, Optional
 
 import boto3
 
-from storages.storage import Storage
+from ghiacciatore.storages.storage import Storage
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
