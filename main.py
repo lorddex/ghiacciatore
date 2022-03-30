@@ -7,7 +7,7 @@ import logging
 import sys
 from typing import Optional
 
-from ghiacciatore.archiver.archiver import Archiver
+from ghiacciatore.archiver import Archiver
 from ghiacciatore.storages.enums import StorageType
 
 logging.basicConfig(

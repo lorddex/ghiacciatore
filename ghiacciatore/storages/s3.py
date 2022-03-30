@@ -1,10 +1,11 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+from __future__ import annotations
 
 import logging
 import os
-from typing import Any, Optional
+from typing import Optional, Tuple
 
 import boto3
 
@@ -15,11 +16,6 @@ logger.setLevel(logging.DEBUG)
 
 
 class StorageAWSS3(Storage):
-    _client: Any = None
-    _s3_resource: Any = None
-    _s3_bucket: Any = None
-    exists: bool = False
-
     def __init__(self, name: str) -> None:
         super().__init__(name)
         self._client = boto3.client("s3")
@@ -28,7 +24,7 @@ class StorageAWSS3(Storage):
         self.exists = self._s3_bucket.creation_date is not None
         logger.info(f"Init S3 Storage {name} (exists={self.exists})")
 
-    def create(self) -> None:
+    def create(self) -> StorageAWSS3:
         logger.info(f"Creating a new S3 Bucket {self.name}")
         # Create the S3 Bucket
         self._s3_bucket = self._s3_bucket.create(
@@ -58,11 +54,26 @@ class StorageAWSS3(Storage):
                 "RestrictPublicBuckets": True,
             },
         )
+        return self
 
-    def add_file(self, file_name: str, import_name: Optional[str] = None) -> dict:
+    def add_file(
+        self, file_name: str, import_name: Optional[str] = None
+    ) -> Tuple[StorageAWSS3, dict]:
         logger.info(f"Uploading {file_name}")
         return (
+            self,
             boto3.resource("s3")
-            .Object(self.name, f"{file_name if not import_name else import_name}")
-            .put(Body=open(file_name, "rb"))
+            .Object(self.name, file_name if not import_name else import_name)
+            .put(Body=open(file_name, "rb")),
+        )
+
+    def get_file(
+        self, file_key: str, to_path: Optional[str] = None
+    ) -> Tuple[StorageAWSS3, dict]:
+        logger.info(f"Downloading {file_key}")
+        return (
+            self,
+            boto3.resource("s3")
+            .Object(self.name, file_key)
+            .download_file(to_path if to_path else file_key),
         )

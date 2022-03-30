@@ -1,25 +1,19 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Type, TypeVar, Optional
+from typing import Optional, Tuple, Type
 
 import boto3
 
 from ghiacciatore.storages.enums import StorageType
 
-Self = TypeVar("Self", bound="Storage")
-
 
 class Storage(ABC):
-
-    name: str = None
-    _account_id: str = None
-    exists: bool = False
-
     @staticmethod
-    def get_storage_class(storage_type: StorageType) -> Type[Self]:
+    def get_storage_class(storage_type: StorageType) -> Type[Storage]:
         if storage_type == StorageType.AWS_GLACIER:
             from ghiacciatore.storages.glacier import StorageAWSGlacier
 
@@ -30,13 +24,21 @@ class Storage(ABC):
             return StorageAWSS3
 
     def __init__(self, name: str) -> None:
-        self._account_id = boto3.client("sts").get_caller_identity().get("Account")
-        self.name = name
+        self._account_id: str = boto3.client("sts").get_caller_identity().get("Account")
+        self.name: str = name
 
     @abstractmethod
-    def create(self) -> Self:
+    def create(self) -> Storage:
         pass
 
     @abstractmethod
-    def add_file(self, file_name: str, import_name: Optional[str] = None) -> dict:
+    def add_file(
+        self, file_name: str, import_name: Optional[str] = None
+    ) -> Tuple[Storage, dict]:
+        pass
+
+    @abstractmethod
+    def get_file(
+        self, file_key: str, destination_path: Optional[str] = None
+    ) -> Tuple[Storage, dict]:
         pass
