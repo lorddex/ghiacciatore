@@ -12,6 +12,10 @@ from ghiacciatore.storages.enums import StorageType
 
 
 class Storage(ABC):
+    def __init__(self, name: str) -> None:
+        self._account_id: str = boto3.client("sts").get_caller_identity().get("Account")
+        self.name: str = name
+
     @staticmethod
     def get_storage_class(storage_type: StorageType) -> Type[Storage]:
         if storage_type == StorageType.AWS_GLACIER:
@@ -22,10 +26,6 @@ class Storage(ABC):
             from ghiacciatore.storages.s3 import StorageAWSS3
 
             return StorageAWSS3
-
-    def __init__(self, name: str) -> None:
-        self._account_id: str = boto3.client("sts").get_caller_identity().get("Account")
-        self.name: str = name
 
     @abstractmethod
     def create(self) -> Storage:
